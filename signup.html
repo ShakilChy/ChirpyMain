@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chirpy</title>
+    <link rel="shortcut icon" href="images/chirp.png">
+    <link rel="shortcut icon" href="images/wall.jpg">
+    <script src="js/jquery-3.4.1.min.js"></script>
+	<style>
+body{
+	background-image: url('images/wall.jpg');
+}
+
+article{
+	padding:30px;
+	text-align:left;
+	margin-right:30%;
+	margin-left:30%;
+       }
+
+aside{
+	display:block;
+	width:20%;
+	float:right;
+	text-align:center;
+	background-color:#475073;
+	margin-top:-210px;
+      }
+ .error {
+            color: red;
+            display: block;
+            margin-left: 130px;
+            font-size: small;
+            font-weight: bold;
+        }
+      #messages li:nth-child(odd) { background: #eee; overflow-y:auto;}
+
+#divSignUp{
+	border-style: solid;
+	border-color:#9ddcfc;
+	border-radius:25px;
+	padding: 10px;
+	text-align:center;
+        }
+a
+{
+    position: relative;
+    display: inline-block;
+    padding: 5px 5px;
+    color: #9addfc;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-decoration: none;
+    font-size: 24px;
+    overflow: hidden;
+    transition: 0.2s;
+}
+a:hover
+{
+    color: #255784;
+    background: #9addfc;
+    box-shadow: 0 0 10px #9addfc, 0 0 40px #9addfc, 0 0 80px #9addfc;
+    transition-delay: 1s;
+}
+a span
+{
+    position: absolute;
+    display: block;
+}
+a span:nth-child(1)
+{
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,transparent,#2196f3);
+}
+a:hover span:nth-child(1)
+{
+    left: 100%;
+    transition: 1s;
+} 
+a span:nth-child(2)
+{
+    bottom: 0;
+    right: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(270deg,transparent,#2196f3);
+}
+a:hover span:nth-child(2)
+{
+    right: 100%;
+    transition: 1s;
+    transition-delay: 0.5s;
+}
+a span:nth-child(3)
+{
+    top: -100℅;
+    right: 0%;
+    width: 2px%;
+    height: 100%;
+    background: linear-gradient(180deg,transparent,#9addfc);
+}
+a:hover span:nth-child(3)
+{
+    top: 100%;
+    transition: 1s;
+    transition-delay: 0.25s;
+}
+a span:nth-child(4)
+{
+    bottom: -100℅;
+    left: 0%;
+    width: 2px%;
+    height: 100%;
+    background: linear-gradient(360deg,transparent,#9addfc);
+}
+a:hover span:nth-child(4)
+{
+    bottom: 100%;
+    transition: 1s;
+    transition-delay: 0.75s;
+}
+#btnSignUp{
+	height:30px;
+	width:100px;
+}
+input[type=text] {
+  width: 300px;
+  text-align:center;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: white;
+  background-position: 10px 10px; 
+  background-repeat: no-repeat;
+  padding: 12px 20px 12px 40px;
+  -webkit-transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out;
+}
+
+input[type=text]:focus {
+  width: 100%;
+}
+	</style>
+    <script>
+       var oPosition = null;
+       
+        $(function () {
+            getLocation();
+            $('#btnSignUp').click(function(){
+              var oUserInfo = {"latitude": oPosition.latitude,"longitude":oPosition.longitude, "userId":$('#txtUser').val()};
+              sessionStorage.setItem('userInfo', JSON.stringify(oUserInfo));
+              window.location.replace("http://localhost:3000/chat");
+            });
+        });
+
+        function getLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+          } else { 
+            alert("Geolocation is not supported by this browser.");
+          }
+        }
+
+        function showPosition(position) {
+          oPosition = {"latitude":position.coords.latitude, "longitude":position.coords.longitude};
+        }
+    </script>
+  </head>
+  <body>
+<h1 style="text-align: center; color: white;"><img src="images/chirp.png" height="100px" width="100px"></h1>
+	<nav>
+	</nav>
+	<article>
+    <div id="divSignUp">
+		<h2 style="text-align:center; color: white;">Please Enter Your Name</h2>
+      <label></label><input type="text" id="txtUser" placeholder="Write Your Name Here"/><br/><br/>
+	<a href="#">
+	<span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+	<input type="button" id="btnSignUp" value="Let's Chirp">
+	</a>
+    </div>
+    </artice>
+<aside>
+</aside>
+    
+  </body>
+</html>

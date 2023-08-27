@@ -1,0 +1,207 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chirpy</title>
+    <link rel="shortcut icon" href="images/chirp.png">
+    <link rel="shortcut icon" href="images/wall.jpg">
+    <style>
+     body{
+	background-image: url('images/wall.jpg');
+	margin:0px auto;
+    }
+article{
+	padding:30px;
+	text-align:right;
+	margin-right:30%;
+	margin-left:30%;
+	margin-top:-30%;;
+       }
+
+aside{
+	display:block;
+	width:25%;
+	float:right;
+  color: white;
+	text-align:left;
+	border-style: solid;
+  border-color: white;
+	margin-bottom:-20%;
+      }
+ .error {
+            color: red;
+            display: block;
+            margin-left: 130px;
+            font-size: small;
+            font-weight: bold;
+        }
+      #messages li:nth-child(odd) { background: #eee; overflow-y:auto;}
+#dropContainer{
+	border-style: solid;
+	border-color:azure;
+	border-radius:25px;
+  background-color: white;
+	padding: 10px;
+  text-align: right;
+  height: 40%;
+  }
+#m{
+	width:255px;
+  }
+  nav{
+    border-style: solid;
+    border-color: white;
+    border-radius: 20px;
+    color: white;
+    width: 25%;
+    margin-bottom: 0%;
+  }
+  input[type=text] {
+  width: 300px;
+  text-align:center;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script>
+        $(function () {
+            var strUserInfo = sessionStorage.getItem('userInfo');
+            var oUserInfo = JSON.parse(strUserInfo);
+            getAddress(oUserInfo.latitude, oUserInfo.longitude);
+            if(oUserInfo===null){
+              window.location.replace("http://localhost:3000");
+            }
+            $('#user').text(oUserInfo.userId);
+            $('#lat').text(oUserInfo.latitude);
+            $('#lon').text(oUserInfo.longitude);
+            
+            var socket = io();
+            $('#dropContainer').submit(function(e) {
+                e.preventDefault(); // prevents page reloading
+                var currentDateTime = new Date();
+                var newDateTime = currentDateTime.toLocaleDateString() + ' ' + currentDateTime.toLocaleTimeString();
+                var oMessage = { "userId":oUserInfo.userId, "message":$('#m').val(), "dateTime":newDateTime };
+                socket.emit('chat message', oMessage );
+                $('#m').val('');
+                return false;
+            });
+
+            socket.on('chat message', function(msg){
+                var htmlElements ='<strong>'+ msg.userId+'</strong>: '+msg.message+'<br/><span style="color:#7f8680">'+msg.dateTime+'</span>';
+                $('#messages').append($('<li>').html(htmlElements));
+            });
+
+            var mapURL ='https://maps.google.com/maps?&q='+oUserInfo.latitude+','+oUserInfo.longitude+'&ie=UTF8&z=14&iwloc=B&output=embed';
+            //var mapURL = 'https://maps.google.com/maps?width=100%&amp;height=600&amp;hl=en&amp;q='+oUserInfo.latitude+','+oUserInfo.longitude+';ie=UTF8&amp;t=&amp;z=14&amp;iwloc=B&amp;output=embed';
+            $("iframe").attr("src", mapURL);
+
+            //form Submit
+            $("#formFileUpload").submit(function(evt){   
+              evt.preventDefault();
+              var formData = new FormData($(this)[0]);
+              $.ajax({
+                  url: 'uploadfile',
+                  type: 'POST',
+                  data: formData,
+                  async: false,
+                  cache: false,
+                  contentType: false,
+                  enctype: 'multipart/form-data',
+                  processData: false,
+                  success: function (response) {
+                    var res = JSON.parse(response);
+                    //alert(res.filePath);
+                    var currentDateTime = new Date();
+                    var newDateTime = currentDateTime.toLocaleDateString() + ' ' + currentDateTime.toLocaleTimeString();
+                    var oMessage = { "userId":oUserInfo.userId, "message":'<a href="'+res.filePath+'" target="_blank">'+res.fileName+'</a>', "dateTime":newDateTime };
+                    socket.emit('chat message', oMessage );
+                    $('#upload').val('');
+                  }
+              });
+              return false;
+            });
+
+        });
+
+        function getAddress(lat, lon){
+            var oJson ={};
+            var theUrl = 'https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lon+'&addressdetails=1';
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() { 
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    oJson = JSON.parse(xmlHttp.responseText);
+                    $('#address').text(oJson.display_name);
+            }
+            xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+            xmlHttp.send(null);
+        }
+        $(document).ready(function(){
+          $(window).scroll(function(){
+            $("aside").css('top',$(window).scrllTop()+'px');
+          });
+        })
+
+    </script>
+  </head>
+  <body>
+<h1 style="text-align: center; color: white;"><img src="images/chirp.png" height="100px" width="100px"></h1>
+	<nav>
+    <h3 style="text-align: center; text-decoration: underline; color: white;">Your Location on Map</h3>
+<div style="width: 100%;">
+          <iframe width="100%" height="200" src="" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"><a href="https://www.maps.ie/coordinates.html">find my coordinates</a></iframe>
+      </div>
+      <div>
+      <h3 style="text-align: center; text-decoration: underline; color: white;">Your Location Details</h3> 
+      <br />
+      <strong>Latitude: </strong><br/><span id="lat"></span><br/>
+      <strong>Longitude: </strong><br/><span id="lon"></span>
+      <br />
+      <strong>Address: </strong><br/><span id="address"></span>
+    </div>
+  </nav>
+	<article>
+    <div id="dropContainer" style="height: 318px; position: relative;">
+      <strong>Welcome to Chirpy, </strong><span id="user" style="color:#3F4EE8; font-size: larger; text-align: left;"></span>
+    <ul id="messages" style="text-align: left;height: 200px;overflow-y: scroll;"></ul>
+
+    <div  style="position: absolute;bottom: 0; margin-left: 38px; margin-bottom: 10px;">
+        <form action="">
+          <input id="m" autocomplete="off" /><button style="margin-left: 5px;">Send</button>
+        </form>
+        <br/>
+        <form id="formFileUpload">
+          <input type="file" name="upload" id="upload" multiple style="text-align: left;">
+          <input type="submit" value="Upload" style="text-align: right;">
+        </form>
+    </div>
+</div>
+	</article>
+  <script>
+        // dragover and dragenter events need to have 'preventDefault' called
+        // in order for the 'drop' event to register. 
+        // See: https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations#droptargets
+        dropContainer.ondragover = dropContainer.ondragenter = function(evt) {
+          evt.preventDefault();
+        };
+
+        dropContainer.ondrop = function(evt) {
+          // pretty simple -- but not for IE :(
+          fileInput.files = evt.dataTransfer.files;
+
+          // If you want to use some of the dropped files
+          const dT = new DataTransfer();
+          dT.items.add(evt.dataTransfer.files[0]);
+          //dT.items.add(evt.dataTransfer.files[3]);
+          fileInput.files = dT.files;
+
+          evt.preventDefault();
+        };
+
+    </script>
+  </body>
+</html>
